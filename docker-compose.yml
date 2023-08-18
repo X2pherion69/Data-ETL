@@ -1,0 +1,26 @@
+version: "3.8"
+
+services:
+  db:
+    build:
+      context: ./docker
+    environment:
+      POSTGRES_USER: myuser
+      POSTGRES_PASSWORD: mypassword
+    ports:
+      - "8432:8432"
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+
+  # spark-etl:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   volumes:
+  #     - ./etl_code:/etl_code
+  #     - ./data:/data
+  #   depends_on:
+  #     - db
+
+volumes:
+  pg_data:
