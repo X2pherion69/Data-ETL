@@ -1,34 +1,48 @@
-from pyspark.sql.functions import col, collect_set
-from pyspark.sql.types import IntegerType, DateType
+from pyspark.sql.functions import col, collect_set, unix_timestamp, concat_ws, udf
+from pyspark.sql.types import IntegerType, StringType
+from pyspark.sql import DataFrame, Column
 
 cols = [
+    "id",
     "Rank",
-    # "Danceability",
     "Date",
-    # "Danceability",
-    # "Energy",
-    # "Loudness",
-    # "Speechiness",
-    # "Instrumentalness",
-    # "Acousticness",
-    # "Valence",
-    # "Nationality",
-    # "Continent",
-    # "id",
-    # "Song URL",
+    "Points",
+    "Danceability",
+    "Energy",
+    "Loudness",
+    "Speechiness",
+    "Instrumentalness",
+    "Acousticness",
+    "Valence",
+    "Nationality",
+    "Continent",
 ]
 
 
-def merge_dup_row(df):
-    return (
-        df.groupBy(*cols).agg(
+def utf8_encode(s: str):
+    return s.encode("utf-8", "ignore").decode("utf-8")
+
+
+utf8_encode_udf = udf(utf8_encode, StringType())
+
+
+def merge_dup_row(df: DataFrame) -> DataFrame:
+    trans_df = (
+        df.groupBy(*cols)
+        .agg(
             collect_set("Artists").alias("Artists"), collect_set("Title").alias("Title")
         )
-        # .withColumn("", col("Date").cast(DateType()))
+        .withColumn(
+            "timestamp", unix_timestamp(col("Date"), "dd/MM/yyyy").cast(IntegerType())
+        )
+        .withColumn("Title", concat_ws(" ", col("Title")).cast("string"))
+        .withColumn("Title", utf8_encode_udf(col("Title")))
         .orderBy(
             [
+                col("timestamp").desc(),
                 col("Rank").cast(IntegerType()).asc(),
-                col("Date").desc(),
             ]
         )
     )
+
+    return trans_df
