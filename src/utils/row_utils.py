@@ -51,7 +51,7 @@ def merge_dup_row(df: DataFrame) -> DataFrame:
     return aggregated_df
 
 
-def sort_df(df: DataFrame) -> DataFrame:
+def sort_row_df(df: DataFrame) -> DataFrame:
     sorted_df = df.orderBy(
         [
             col("Date").desc(),
