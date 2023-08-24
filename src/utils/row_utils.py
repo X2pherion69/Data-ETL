@@ -1,13 +1,11 @@
 from pyspark.sql.functions import (
     col,
     collect_set,
-    unix_timestamp,
     concat_ws,
-    udf,
     to_date,
 )
-from pyspark.sql.types import IntegerType, StringType
-from pyspark.sql import DataFrame, Column
+from pyspark.sql.types import IntegerType
+from pyspark.sql import DataFrame
 
 cols = [
     "id",
