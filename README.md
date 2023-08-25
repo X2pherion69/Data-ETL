@@ -1,3 +1,7 @@
-# Data-ETL
+# Name = "Data-ETL"
 
-- Dependencies: python-dotenv, pandas, black, pyarrow, fastparquet
+# Version = "1.0.0"
+
+# Description = ""
+
+# Authors = ["X2pherion & Inkeister"]

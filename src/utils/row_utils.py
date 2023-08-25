@@ -22,11 +22,6 @@ cols = [
 ]
 
 
-# def utf8_encode(s: str):
-#     return s.encode("utf-8", "ignore").decode("utf-8")
-# utf8_encode_udf = udf(utf8_encode, StringType())
-
-
 def merge_dup_row(df: DataFrame) -> DataFrame:
     trans_df = df.groupBy(*cols)
 
@@ -43,10 +38,14 @@ def merge_dup_row(df: DataFrame) -> DataFrame:
     continent_col = trans_df.agg(collect_set("Continent").alias("Continent"))
 
     aggregated_df = (
-        title_col.join(artist_col, on=cols)
-        .join(nation_col, on=cols)
-        .join(continent_col, on=cols)
-    ).withColumn("Date", to_date(col("Date"), "dd/MM/yyyy"))
+        (
+            title_col.join(artist_col, on=cols)
+            .join(nation_col, on=cols)
+            .join(continent_col, on=cols)
+        )
+        .withColumn("Date", to_date(col("Date"), "dd/MM/yyyy"))
+        .withColumn("Rank", col("Rank").cast("int"))
+    )
 
     return aggregated_df
 
@@ -60,3 +59,9 @@ def sort_row_df(df: DataFrame) -> DataFrame:
     )
 
     return sorted_df
+
+
+def filter_row_df(df: DataFrame) -> DataFrame:
+    filtered_df = df.filter(col("Date").isNotNull() | col("Rank").isNotNull())
+
+    return filtered_df

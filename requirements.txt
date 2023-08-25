@@ -1,0 +1,9 @@
+pyspark==3.4.1
+hdfs==2.7.2
+pytest==5.2
+python-dotenv==1.0.0
+pandas==2.0.3
+black==23.7.0
+pyarrow==13.0.0
+fastparquet==2023.7.0
+matplotlib==3.7.2
