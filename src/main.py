@@ -2,8 +2,8 @@ from config import hdfs_client, HDFS_PATH
 from utils.hdfs_utils import upload_df_to_hdfs, get_df_from_hdfs
 from utils.spark_utils import transform_csv_to_df
 import pandas as pd
-from pandas import DataFrame
 from config.spark import spark_session
+from utils.row_utils import cols, transf_df_to_chart_data
 
 csv_file_path = "../data/Spotify_Dataset_V3.csv"
 directory_output = "../data/"
@@ -29,20 +29,12 @@ def main():
 
     df_from_hdfs = pd.read_parquet(parquet_from_hdfs)
 
-    top_5_specific_date = df_from_hdfs[df_from_hdfs["Rank"] <= 5]
+    chart_df = transf_df_to_chart_data(df=df_from_hdfs)
 
-    top_5_all_time = top_5_specific_date["Title"].value_counts().head(5)
+    print(chart_df)
 
-    for val in top_5_all_time.to_dict().keys():
-        x: DataFrame = df_from_hdfs[df_from_hdfs["Title"] == val]
-
-    print(
-        x.insert(
-            column="Count", value=top_5_all_time.items(), allow_duplicates=False, loc=0
-        )
-    )
     # Export csv using pandas
-    # top_5.to_csv(output_path_csv, index=False)
+    # chart_df.to_csv(output_path_csv, index=False)
 
     spark_session.stop()
 
