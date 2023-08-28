@@ -3,7 +3,8 @@ import pyarrow.parquet as ParquetType
 from hdfs import InsecureClient
 from config import HDFS_PATH
 
-file_path = "C:\\Users\\olala\\OneDrive\\Desktop\\Personal\\Data-ETL\\data\\sportify_transform_df.parquet"
+# file_path = "C:\\Users\\olala\\OneDrive\\Desktop\\Personal\\Data-ETL\\data\\sportify_transform_df.parquet"
+file_path = "C:\\Users\\Admin\\Desktop\\EntwProject\\Data-ETL\\data\\sportify_transform_df.parquet"
 
 
 def upload_df_to_hdfs(df: DataFrame, hdfs_client: InsecureClient):

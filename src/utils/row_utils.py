@@ -72,28 +72,28 @@ def agg_to_set_list_pandas(series: PdSeries) -> PdSeries:
     return set(series)
 
 
-def transf_df_to_chart_data(df: PdDataFrame) -> PdDataFrame:
-    # Get top 5 songs that have Rank <= 5
-    df_top_5_rank = df[df["Rank"] <= 5]
+# def transf_df_to_chart_data(df: PdDataFrame) -> PdDataFrame:
+#     # Get top 5 songs that have Rank <= 5
+#     df_top_5_rank = df[df["Rank"] <= 5]
 
-    # Aggregate the top 5 songs after `Title` and make a col named `Count` to count the total quantity of each top 5 songs
-    df_grouped = df_top_5_rank.groupby("Title").size().reset_index(name="Count")
+#     # Aggregate the top 5 songs after `Title` and make a col named `Count` to count the total quantity of each top 5 songs
+#     df_grouped = df_top_5_rank.groupby("Title").size().reset_index(name="Count")
 
-    # Create a new col named `TotalCount` to store the total quantity of each top 5 songs
-    df_top_5_rank["Count"] = df_top_5_rank["Title"].map(
-        df_grouped.set_index("Title")["Count"]
-    )
+#     # Create a new col named `TotalCount` to store the total quantity of each top 5 songs
+#     df_top_5_rank["Count"] = df_top_5_rank["Title"].map(
+#         df_grouped.set_index("Title")["Count"]
+#     )
 
-    agged_data = (
-        df_top_5_rank.groupby(cols)
-        .agg(
-            {
-                "Title": "unique",
-            }
-        )
-        .reset_index()
-    )
+#     agged_data = (
+#         df_top_5_rank.groupby(cols)
+#         .agg(
+#             {
+#                 "Title": "unique",
+#             }
+#         )
+#         .reset_index()
+#     )
 
-    sort_df = sort_row_df(agged_data)
+#     sort_df = sort_row_df(agged_data)
 
-    return sort_df
+#     return sort_df
