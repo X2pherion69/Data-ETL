@@ -1,12 +1,15 @@
+import re
 from pyspark.sql.functions import (
     col,
     collect_set,
     concat_ws,
     to_date,
+    split,
+    regexp_replace,
 )
 from pyspark.sql.types import IntegerType
 from pyspark.sql import DataFrame as SparkDataFrame
-from pandas import DataFrame as PdDataFrame, Series as PdSeries
+from pandas import Series as PdSeries
 
 cols = [
     "id",
@@ -24,6 +27,10 @@ cols = [
 
 
 def merge_dup_row(df: SparkDataFrame) -> SparkDataFrame:
+    characters_remove = ["[", "]"]
+
+    pattern_regx = "|".join(map(re.escape, characters_remove))
+
     trans_df = df.groupBy(*cols)
 
     title_col = trans_df.agg(collect_set("Title").alias("Title")).withColumn(
@@ -46,6 +53,10 @@ def merge_dup_row(df: SparkDataFrame) -> SparkDataFrame:
         )
         .withColumn("Date", to_date(col("Date"), "dd/MM/yyyy"))
         .withColumn("Rank", col("Rank").cast("int"))
+        .withColumn(
+            "Artists",
+            split(regexp_replace(col("Artists").cast("string"), pattern_regx, ""), ","),
+        )
     )
 
     return aggregated_df

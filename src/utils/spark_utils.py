@@ -1,7 +1,15 @@
-from typing import List, Tuple
+import numpy as np
 from config.spark import spark_session
 from pyspark.sql import DataFrame as SparkDataFrame
-from pyspark.sql.functions import col, year, to_date, count, lit, collect_set
+from pyspark.sql.functions import (
+    col,
+    year,
+    to_date,
+    count,
+    lit,
+    array_contains,
+    format_number,
+)
 from utils import row_utils
 from pyspark.sql.window import Window
 
@@ -19,27 +27,62 @@ def transform_csv_to_df(file_path: str):
 
 
 def trans_df_to_chart_top_5_data(df: SparkDataFrame) -> SparkDataFrame:
-    # -> List[Tuple[int, SparkDataFrame]]:
-    # splitted_df = []
-
     formatted_df = df.withColumn("Date", year(to_date(col("Date"))))
 
-    top_5_songs = formatted_df.filter(col("Rank") == 1)
+    top_5_songs_df = formatted_df.filter(col("Rank") == 1)
 
     window_spec = Window.partitionBy("Title")
 
-    df_with_count = top_5_songs.withColumn("Count", count(lit(1)).over(window_spec))
+    df_with_count = top_5_songs_df.withColumn("Count", count(lit(1)).over(window_spec))
 
     df_with_count = df_with_count.drop_duplicates(subset=["Title"]).orderBy(
         col("Count").desc()
     )
 
-    # unique_dates = top_5_songs.select("Date").distinct().collect()
-
-    # for row in unique_dates:
-    #     data_filtered_df = top_5_songs.filter(col("Date") == row["Date"])
-    #     splitted_df.append((row["Date"], data_filtered_df))
-
-    # return splitted_df
-
     return df_with_count
+
+
+def trans_df_to_chart_the_weeknd_songs(df: SparkDataFrame):
+    cols = [
+        "Rank",
+        "Points",
+        "Danceability",
+        "Energy",
+        "Loudness",
+        "Speechiness",
+        "Instrumentalness",
+        "Acousticness",
+        "Valence",
+        "Nationality",
+        "Continent",
+        "Date",
+    ]
+
+    filtered_df = df.filter(array_contains(df.Artists, "The Weeknd"))
+
+    total_records = filtered_df.count()
+
+    window_spec = Window.partitionBy("Title")
+    df_with_count = filtered_df.withColumn("Count", count(lit(1)).over(window_spec))
+
+    top_song_name = df_with_count.orderBy(col("Count").desc()).first().Title
+
+    df_with_top_song = filtered_df.filter(col("Title") == top_song_name)
+
+    df_with_top_song.show(100)
+
+    df_with_count = (
+        df_with_count.drop_duplicates(subset=["Title"])
+        .orderBy(col("Count").desc())
+        .withColumn("Percentage", format_number(col("Count") / total_records * 100, 2))
+        .drop(*cols)
+        .limit(5)
+    )
+
+    col_percent_values = df_with_count.select(col("Percentage")).collect()
+
+    col_percent_values = [float(row[0]) for row in col_percent_values]
+
+    others_percentage = float(np.fix(100 - np.sum(col_percent_values)))
+
+    return (others_percentage, df_with_count)
